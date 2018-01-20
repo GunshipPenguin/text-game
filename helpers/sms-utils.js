@@ -1,3 +1,5 @@
+'use strict'
+
 const zlib = require('zlib')
 const tokens = require('../tokens')
 const lib = require('lib')({token: tokens.STDLIB_TOKEN})
