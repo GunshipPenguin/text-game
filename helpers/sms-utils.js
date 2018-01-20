@@ -17,10 +17,18 @@ const smsUtils = {
   decodeMessage: function (message) {
     try {
       let decompressed = zlib.inflateSync(Buffer.from(message, 'base64'))
-      console.log(decompressed.toString())
       let parsedObject = JSON.parse(decompressed.toString())
 
       return parsedObject
+    } catch (e) {
+      utils.log.error('Could not parse SMS', e)
+    }
+  },
+
+  encodeMessage: function (message) {
+    try {
+      return zlib.deflateSync(Buffer.from(JSON.stringify(message), 'ascii'))
+          .toString('base64')
     } catch (e) {
       utils.log.error('Could not parse SMS', e)
     }
