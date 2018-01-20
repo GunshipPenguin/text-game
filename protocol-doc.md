@@ -2,11 +2,11 @@
 
 All SMS messages are sent as base64 encoded JSON in the following format:
 
-## Client starts game
+## Client opens game lobby
 ### (client->server)
 ```
 {
-  "event_type": "new_game"
+  "event_type": "open_lobby"
 }
 ```
 
@@ -32,6 +32,14 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 {
   "event_type": "new_registration",
   "players_in_lobby": ["7782350067", "7788728011"]
+}
+```
+
+## Client starts game
+### (client->server)
+```
+{
+  "event_type": "start_game"
 }
 ```
 
