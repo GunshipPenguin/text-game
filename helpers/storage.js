@@ -2,9 +2,6 @@
 
 const tokens = require('../tokens')
 const lib = require('lib')({token: tokens.STDLIB_TOKEN})
-const utils = lib.utils({
-  service: 'text-game'
-})
 
 const storage = {
   /**
@@ -26,7 +23,7 @@ const storage = {
    * @param {object} gameInfo Object containing game information to set
    */
   setGame: async function (hostPhoneNumber, gameInfo) {
-    await lib.utils.storage.set(hostPhoneNumber, gameInfo)
+    return await lib.utils.storage.set(hostPhoneNumber, gameInfo)
   }
 }
 
