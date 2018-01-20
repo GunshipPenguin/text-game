@@ -22,7 +22,8 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 ### (client->server)
 ```
 {
-  "event_type": "register"
+  "event_type": "register",
+  "host_number": "7782350067"
 }
 ```
 
