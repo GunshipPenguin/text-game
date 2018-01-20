@@ -56,7 +56,8 @@ All SMS messages are sent as base64 encoded JSON in the following format:
   ],
   "enemy_spawns": [
     {"point": 0, "timestamp": 1516425838}
-  ]
+  ],
+  "game_end": 1516426738
 }
 ```
 
