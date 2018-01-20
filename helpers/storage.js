@@ -12,20 +12,10 @@ const storage = {
    * persistent storage.
    *
    * @param {string} hostPhoneNumber Phone number of host of game to retrieve
-   * @return {promise} a promise that resolves with game information
+   * @return {object} Object containing game information
    */
-  getGame: function (hostPhoneNumber) {
-    return new Promise((resolve, reject) => {
-      lib.utils.storage.get(hostPhoneNumber, (err, value) => {
-        if (err) {
-          utils.log.error('Could not get game', err)
-          reject(err)
-          return
-        }
-
-        resolve(value)
-      })
-    })
+  getGame: async function (hostPhoneNumber) {
+    return await lib.utils.storage.get(hostPhoneNumber)
   },
 
   /**
@@ -35,10 +25,8 @@ const storage = {
    * @param {string} hostPhoneNumber Phone number of host of game to set
    * @param {object} gameInfo Object containing game information to set
    */
-  setGame: function (hostPhoneNumber, gameInfo) {
-    lib.utils.storage.set(hostPhoneNumber, gameInfo, (err, value) => {
-      if (err) utils.log.error('Could not get game', err)
-    })
+  setGame: async function (hostPhoneNumber, gameInfo) {
+    await lib.utils.storage.set(hostPhoneNumber, gameInfo)
   }
 }
 
