@@ -8,17 +8,32 @@ const utils = lib.utils({
   service: 'text-game'
 })
 
+async function sendSms (recipient, body) {
+  await lib.messagebird.tel.sms({
+    originator: process.env.SERVER_PHONE_NUMBER,
+    recipient: recipient,
+    body: smsUtils.encodeMessage(body)
+  })
+}
+
 function handleOpenLobby (sender) {
   storage.getGame(sender).then(game => {
     if (game !== null) {
-      utils.warn('Warning, tried to open lobby for game that already exists')
-    } else {
-      storage.setGame(sender, {
-        hostPhoneNumber: sender,
-        players: [],
-        lobby: false
-      })
+      utils.warn('Warning: tried to open lobby for game that already exists')
+      return
     }
+
+    // Add a new game to persistence
+    storage.setGame(sender, {
+      hostPhoneNumber: sender,
+      players: [],
+      lobby: false
+    })
+
+    // Inform player of open lobby
+    sendSms(sender, { event_type: 'open_lobby' }).catch(err => {
+      utils.error('Warning: could not send open_lobby event to player', err)
+    })
   })
 }
 
@@ -32,8 +47,23 @@ function handleRegister (sender, hostPhoneNumber) {
       return
     }
 
+    // Add this player to persistent storage
     game.players.push(sender)
     storage.setGame(hostPhoneNumber, game)
+
+    // Send out a new registration event to all players (including the one that
+    // just registered)
+    let event = {
+      event_type: 'new_registration',
+      players_in_lobby: game.players
+    }
+
+    event.players_in_lobby.forEach(number => {
+      sendSms(number, event).catch(err => {
+        utils.error('Warning: could not send new_registration event to player',
+            err)
+      })
+    })
   })
 }
 
@@ -52,6 +82,23 @@ function handleStartGame (sender) {
 
     game.lobby = false
     storage.setGame(sender, game)
+
+    // Build a game_starting event and send to all players
+    let event = {
+      timeStamp: Date.now(),
+      event_type: 'game_starting',
+      player_numbers: game.player_numbers,
+      capture_points: {}, // TODO: Implement this
+      enemy_spawns: {}, // TODO: Implement this
+      game_end: Date.now() + parseInt(process.env.GAME_LENGTH, 10)
+    }
+
+    event.player_numbers.forEach(number => {
+      sendSms(number, event).catch(err => {
+        utils.error('Warning: could not send game_starting event to player',
+            err)
+      })
+    })
   })
 }
 
