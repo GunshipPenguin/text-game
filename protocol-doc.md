@@ -26,11 +26,12 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 }
 ```
 
-## Server informs client of successful registration
+## Server informs clients of new player in lobby
 ### (server->client)
 ```
 {
-  "event_type": "registration_ok"
+  "event_type": "new_registration",
+  "players_in_lobby": ["7782350067", "7788728011"]
 }
 ```
 
