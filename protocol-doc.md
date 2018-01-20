@@ -69,6 +69,15 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 }
 ```
 
+## Chat message
+### (client->client)
+```
+{
+  "event_type": "chat_message",
+  "message": "This is a message"
+}
+```
+
 ## Position update
 ### (client->client)
 ```
