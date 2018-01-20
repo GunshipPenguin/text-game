@@ -130,21 +130,3 @@ All SMS messages are sent as base64 encoded JSON in the following format:
   "capture_point": 0
 }
 ```
-
-## Upon being downed
-### (client->client)
-```
-{
-  "timestamp": 1516425738,
-  "event_type": "downed"
-}
-```
-
-## Upon reviving a player
-### (client->client)
-```
-{
-  "timestamp": 1516425738,
-  "event_type": "revived_player"
-}
-```
