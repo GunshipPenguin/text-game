@@ -24,9 +24,8 @@ function handleOpenLobby (sender) {
 
     // Add a new game to persistence
     return lib.utils.storage.set(sender, {
-      hostPhoneNumber: sender,
-      players: [sender],
-      lobby: false
+      player_numbers: [sender],
+      lobby: true
     })
   }).then(() => {
     // Inform player of open lobby
@@ -39,20 +38,20 @@ function handleOpenLobby (sender) {
 function handleRegister (sender, hostPhoneNumber) {
   return lib.utils.storage.get(hostPhoneNumber).then(game => {
     if (game === null) {
-      return utils.warn("Warning: tried to register for a game that doesn't exist")
+      throw new Error("Warning: tried to register for a game that doesn't exist")
     } else if (game.lobby === false) {
-      return utils.warn("Warning: tried to register for a game that doesn't exist")
+      throw new Error('Warning: tried to register for a game that is already underway')
     }
 
     // Add this player to persistent storage
-    game.players.push(sender)
+    game.player_numbers.push(sender)
     return lib.utils.storage.set(hostPhoneNumber, game)
   }).then(game => {
     // Send out a new registration event to all players (including the one that
     // just registered)
     let event = {
       event_type: 'new_registration',
-      players_in_lobby: game.players
+      players_in_lobby: game.player_numbers
     }
 
     let sendPromises = event.players_in_lobby.map(number => sendSms(number, event))
@@ -61,13 +60,11 @@ function handleRegister (sender, hostPhoneNumber) {
 }
 
 function handleStartGame (sender) {
-  return lib.utils.storage.getGame(sender).then(game => {
+  return lib.utils.storage.get(sender).then(game => {
     if (game === null) {
-      return utils.warn("Warning: tried to start a game that doesn't exist")
+      throw new Error("Warning: tried to start a game that doesn't exist")
     } else if (game.lobby === false) {
-      return utils.warn('Warning: tried to start a game that has already started')
-    } else if (sender !== game.hostPhoneNumber) {
-      return utils.warn('Warning: player tried to start a game when not host')
+      throw new Error('Warning: tried to start a game that has already started')
     }
 
     game.lobby = false
@@ -100,22 +97,29 @@ module.exports = (sender, receiver, message, createdDatetime, context, callback)
   // Decompress + decode message
   let messageJson = smsUtils.decodeMessage(message)
 
-  let actionPromise
-  if (messageJson.event_type === 'open_lobby') {
-    actionPromise = handleOpenLobby(sender)
-  } else if (messageJson.event_type === 'register') {
-    actionPromise = handleRegister(sender, messageJson.hostPhoneNumber)
-  } else if (messageJson.event_type === 'start_game') {
-    actionPromise = handleStartGame(sender)
-  } else {
-    utils.log.error('Invalid event type specified: ' + messageJson.event_type)
-    .then(() => callback(new Error('Invalid event type')))
-    .catch(callback)
+  const gameToSet = {
+    player_numbers: ['17782350067', '12048170614'],
+    lobby: true
   }
 
-  actionPromise.then(() => callback(null, OK_CODE)).catch(err => {
-    return utils.log.error('Error while handling message', err)
-    .then(() => callback(err))
-    .catch(callback)
-  })
+  lib.utils.storage.set('12048170614', gameToSet).then(() => {
+    let actionPromise
+    if (messageJson.event_type === 'open_lobby') {
+      actionPromise = handleOpenLobby(sender)
+    } else if (messageJson.event_type === 'register') {
+      actionPromise = handleRegister(sender, messageJson.host_number)
+    } else if (messageJson.event_type === 'start_game') {
+      actionPromise = handleStartGame(sender)
+    } else {
+      utils.log.error('Invalid event type specified: ' + messageJson.event_type)
+      .then(() => callback(new Error('Invalid event type')))
+      .catch(callback)
+    }
+
+    actionPromise.then(() => callback(null, OK_CODE)).catch(err => {
+      return utils.log.error('Error while handling message', err)
+      .then(() => callback(err))
+      .catch(callback)
+    })
+  }).catch(callback)
 }
