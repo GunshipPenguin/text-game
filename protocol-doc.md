@@ -83,6 +83,7 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 ```
 {
   "timestamp": 1516425738,
+  "event_type": "capture_treasure",
   "treasure_number": 2
 }
 ```
