@@ -2,11 +2,10 @@
 
 const smsUtils = require('../helpers/sms-utils')
 const lib = require('lib')({token: process.env.STDLIB_TOKEN})
+const constants = require('../constants')
 const utils = lib.utils({
   service: 'text-game'
 })
-
-const OK_CODE = 'ok'
 
 function sendSms (recipient, body) {
   return lib.messagebird.tel.sms({
@@ -107,7 +106,7 @@ module.exports = (sender, receiver, message, createdDatetime, context, callback)
     .catch(callback)
   }
 
-  actionPromise.then(() => callback(null, OK_CODE)).catch(err => {
+  actionPromise.then(() => callback(null, constants.OK_CODE)).catch(err => {
     return utils.log.error('Error while handling message', err)
     .then(() => callback(err))
     .catch(callback)
