@@ -85,7 +85,6 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 {
   "timestamp": 1516425738,
   "event_type": "position_update",
-  "player_number": "7782350067",
   "latitude": -37.813,
   "longitude": 144.962
 }
