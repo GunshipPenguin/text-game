@@ -12,7 +12,7 @@ function sendSms (recipient, body) {
     originator: process.env.SERVER_PHONE_NUMBER,
     recipient: recipient,
     body: smsUtils.encodeMessage(body)
-  })
+  }).then(() => utils.log(`Sending ${JSON.stringify(body)} to ${recipient}`))
 }
 
 function handleOpenLobby (sender) {
@@ -93,22 +93,24 @@ module.exports = (sender, receiver, message, createdDatetime, context, callback)
   // Decompress + decode message
   let messageJson = smsUtils.decodeMessage(message)
 
-  let actionPromise
-  if (messageJson.event_type === 'open_lobby') {
-    actionPromise = handleOpenLobby(sender)
-  } else if (messageJson.event_type === 'register') {
-    actionPromise = handleRegister(sender, messageJson.host_number)
-  } else if (messageJson.event_type === 'start_game') {
-    actionPromise = handleStartGame(sender)
-  } else {
-    utils.log.error('Invalid event type specified: ' + messageJson.event_type)
-    .then(() => callback(new Error('Invalid event type')))
-    .catch(callback)
-  }
+  utils.log(`handlesms got text ${JSON.stringify(messageJson)} from ${sender}`).then(() => {
+    let actionPromise
+    if (messageJson.event_type === 'open_lobby') {
+      actionPromise = handleOpenLobby(sender)
+    } else if (messageJson.event_type === 'register') {
+      actionPromise = handleRegister(sender, messageJson.host_number)
+    } else if (messageJson.event_type === 'start_game') {
+      actionPromise = handleStartGame(sender)
+    } else {
+      utils.log.error('Invalid event type specified: ' + messageJson.event_type)
+      .then(() => callback(new Error('Invalid event type')))
+      .catch(callback)
+    }
 
-  actionPromise.then(() => callback(null, constants.OK_CODE)).catch(err => {
-    return utils.log.error('Error while handling message', err)
-    .then(() => callback(err))
-    .catch(callback)
+    actionPromise.then(() => callback(null, constants.OK_CODE)).catch(err => {
+      return utils.log.error("Error while processing event", err)
+      .then(() => callback(err))
+      .catch(callback)
+    })
   })
 }
