@@ -1,7 +1,7 @@
 'use strict'
 
 const smsUtils = require('../helpers/sms-utils')
-const lib = require('lib')({token: 'IyOStmVa0I-f5r1DNhJB2i5Cykyem2f6wzaBxzBdJM-59DLTGVe2oXA-jMEAr638'})
+const lib = require('lib')({token: process.env.STDLIB_TOKEN})
 const utils = lib.utils({
   service: 'text-game'
 })
@@ -18,8 +18,8 @@ function sendSms (recipient, body) {
 
 function handleOpenLobby (sender) {
   return lib.utils.storage.get(sender).then(game => {
-    if (game !== null) {
-      throw new Error('Warning: tried to open lobby for game that already exists')
+    if (game !== 0 && game !== null) { // Hack to get around the fact that we can't store null in persitence
+      throw new Error(`Warning: ${sender} tried to open lobby for game that already exists`)
     }
 
     // Add a new game to persistence
@@ -27,20 +27,17 @@ function handleOpenLobby (sender) {
       player_numbers: [sender],
       lobby: true
     })
-  }).then(() => {
-    // Inform player of open lobby
-    return sendSms(sender, { event_type: 'game_lobby_started' }).catch(err => {
-      utils.error('Warning: could not send open_lobby event to player', err)
-    })
-  })
+  }).then(() => sendSms(sender, { event_type: 'game_lobby_started' }))
 }
 
 function handleRegister (sender, hostPhoneNumber) {
   return lib.utils.storage.get(hostPhoneNumber).then(game => {
-    if (game === null) {
-      throw new Error("Warning: tried to register for a game that doesn't exist")
+    if (game === 0 && game === null) { // Hack to get around the fact that we can't store null in persitence
+      throw new Error(`Warning: ${sender} tried to register for a game that doesn't exist`)
     } else if (game.lobby === false) {
-      throw new Error('Warning: tried to register for a game that is already underway')
+      throw new Error(`Warning: ${sender} tried to register for a game that is already underway`)
+    } else if (game.player_numbers.includes(sender)) {
+      throw new Error(`Warning: ${sender} tried to register for a game that they are already in`)
     }
 
     // Add this player to persistent storage
@@ -62,9 +59,9 @@ function handleRegister (sender, hostPhoneNumber) {
 function handleStartGame (sender) {
   return lib.utils.storage.get(sender).then(game => {
     if (game === null) {
-      throw new Error("Warning: tried to start a game that doesn't exist")
+      throw new Error(`Warning: ${sender} tried to start a game that doesn't exist`)
     } else if (game.lobby === false) {
-      throw new Error('Warning: tried to start a game that has already started')
+      throw new Error(`Warning: ${sender} tried to start a game that has already started`)
     }
 
     game.lobby = false
@@ -97,29 +94,22 @@ module.exports = (sender, receiver, message, createdDatetime, context, callback)
   // Decompress + decode message
   let messageJson = smsUtils.decodeMessage(message)
 
-  const gameToSet = {
-    player_numbers: ['17782350067', '12048170614'],
-    lobby: true
+  let actionPromise
+  if (messageJson.event_type === 'open_lobby') {
+    actionPromise = handleOpenLobby(sender)
+  } else if (messageJson.event_type === 'register') {
+    actionPromise = handleRegister(sender, messageJson.host_number)
+  } else if (messageJson.event_type === 'start_game') {
+    actionPromise = handleStartGame(sender)
+  } else {
+    utils.log.error('Invalid event type specified: ' + messageJson.event_type)
+    .then(() => callback(new Error('Invalid event type')))
+    .catch(callback)
   }
 
-  lib.utils.storage.set('12048170614', gameToSet).then(() => {
-    let actionPromise
-    if (messageJson.event_type === 'open_lobby') {
-      actionPromise = handleOpenLobby(sender)
-    } else if (messageJson.event_type === 'register') {
-      actionPromise = handleRegister(sender, messageJson.host_number)
-    } else if (messageJson.event_type === 'start_game') {
-      actionPromise = handleStartGame(sender)
-    } else {
-      utils.log.error('Invalid event type specified: ' + messageJson.event_type)
-      .then(() => callback(new Error('Invalid event type')))
-      .catch(callback)
-    }
-
-    actionPromise.then(() => callback(null, OK_CODE)).catch(err => {
-      return utils.log.error('Error while handling message', err)
-      .then(() => callback(err))
-      .catch(callback)
-    })
-  }).catch(callback)
+  actionPromise.then(() => callback(null, OK_CODE)).catch(err => {
+    return utils.log.error('Error while handling message', err)
+    .then(() => callback(err))
+    .catch(callback)
+  })
 }
