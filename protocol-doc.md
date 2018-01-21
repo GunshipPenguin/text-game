@@ -1,6 +1,7 @@
 # Text Game SMS protocol
 
-All SMS messages are sent as base64 encoded JSON in the following format:
+All SMS messages are sent as base64 encoded zlib compressed JSON in the
+following format:
 
 ## Client opens game lobby
 ### (client->server)
