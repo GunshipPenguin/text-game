@@ -100,16 +100,6 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 }
 ```
 
-## Upon successfuly capturing a point
-### (client->client)
-```
-{
-  "timestamp": 1516425738,
-  "event_type": "point_captured",
-  "capture_point": 0
-}
-```
-
 ## Upon leaving a capture point without capturing it
 ### (client->client)
 ```
