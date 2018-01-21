@@ -71,7 +71,7 @@ function handleStartGame (sender) {
       timestamp: Date.now(),
       event_type: 'game_starting',
       player_numbers: game.player_numbers,
-      treasure_spawns: [{latitude: 43.663083, longitude: -79.396691, time: Date.now() + 20}]
+      treasure_spawns: [{latitude: 43.663083, longitude: -79.396691, timestamp: Date.now() + 20}]
     }
 
     let sendPromises = event.player_numbers.map(number => sendSms(number, event))
