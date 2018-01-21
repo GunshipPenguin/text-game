@@ -71,9 +71,7 @@ function handleStartGame (sender) {
       timestamp: Date.now(),
       event_type: 'game_starting',
       player_numbers: game.player_numbers,
-      capture_points: [], // TODO: Implement this
-      enemy_spawns: [], // TODO: Implement this
-      game_end: Date.now() + 900 // TODO: Un-hardcode this
+      treasure_spawns: [{latitude: 43.663083, longitude: -79.396691, time: Date.now() + 20}]
     }
 
     let sendPromises = event.player_numbers.map(number => sendSms(number, event))
@@ -108,7 +106,7 @@ module.exports = (sender, receiver, message, createdDatetime, context, callback)
     }
 
     actionPromise.then(() => callback(null, constants.OK_CODE)).catch(err => {
-      return utils.log.error("Error while processing event", err)
+      return utils.log.error('Error while processing event', err)
       .then(() => callback(err))
       .catch(callback)
     })
