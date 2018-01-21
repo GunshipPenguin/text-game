@@ -68,11 +68,11 @@ function handleStartGame (sender) {
   }).then(game => {
     // Build a game_starting event and send to all players
     let event = {
-      timeStamp: Date.now(),
+      timestamp: Date.now(),
       event_type: 'game_starting',
       player_numbers: game.player_numbers,
-      capture_points: {}, // TODO: Implement this
-      enemy_spawns: {}, // TODO: Implement this
+      capture_points: [], // TODO: Implement this
+      enemy_spawns: [], // TODO: Implement this
       game_end: Date.now() + 900 // TODO: Un-hardcode this
     }
 
