@@ -51,20 +51,8 @@ All SMS messages are sent as base64 encoded JSON in the following format:
   "timestamp": 1516425738,
   "event_type": "game_starting",
   "player_numbers": ["7782350067", "7788728011"],
-  "capture_points": [
-    {
-      "latitude": -32.523,
-      "longitude": 134.133,
-      "point": 0
-    },
-    {
-      "latitude": -32.513,
-      "longitude": 134.143,
-      "point": 1
-    }
-  ],
-  "enemy_spawns": [
-    {"point": 0, "timestamp": 1516425838}
+  "treasure_spawns": [
+    {"latitude": -142.132, "longitude": 32.233 "timestamp": 1516425838}
   ],
   "game_end": 1516426738
 }
@@ -90,32 +78,11 @@ All SMS messages are sent as base64 encoded JSON in the following format:
 }
 ```
 
-## Upon starting to capture a point
+## Capture treasure
 ### (client->client)
 ```
 {
   "timestamp": 1516425738,
-  "event_type": "start_capture",
-  "capture_point": 0
-}
-```
-
-## Upon leaving a capture point without capturing it
-### (client->client)
-```
-{
-  "timestamp": 1516425738,
-  "event_type": "left_capture_point",
-  "capture_point": 0
-}
-```
-
-## Upon defeating an enemy at a point (client->client)
-### (client->client)
-```
-{
-  "timestamp": 1516425738,
-  "event_type": "defeat_enemy",
-  "capture_point": 0
+  "treasure_number": 2
 }
 ```
